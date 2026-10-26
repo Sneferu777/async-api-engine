@@ -6,14 +6,15 @@ def safe_extract(node : html.HtmlElement, xpath_query : str, default : Optional[
     result = node.xpath(xpath_query)
 
     if result:
-        return result[0].strip() if results else default
+        return result[0].strip() 
+    return default
     
     
 def parse_html_quotes(html_bytes : bytes) -> List[Dict[str, Any]] :
 
     tree = html.fromstring(html_bytes)
 
-    cards = tree.xpath("//div[@class='quotes']")
+    cards = tree.xpath("//div[@class='quote']")
 
     records = []
 
@@ -27,25 +28,28 @@ def parse_html_quotes(html_bytes : bytes) -> List[Dict[str, Any]] :
             {
                 "quote" : text,
                 "author" : author,
-                "tags" : ", " join(tags)
+                "tags" : ", ".join(tags)
             }
         )
     return records
 
 
-    def parse_api_quotes(data : dict) -> List[Dict[str, Any]]:
-        records = []
+def parse_api_quotes(data : dict) -> List[Dict[str, Any]]:
+    records = []
 
-        for item in data.get('quotes', []) :
-            records.append(
-                {
-                    "quote" : item.get("text"),
-                    "author" : item.get("author").get("name"),
-                    "tags" : ", " join(item.get("tags", []))
-                }
-            )
+    for item in data.get('quotes', []) :
+        author_data = item.get("author")
+        author_name = author_data.get("name") if isinstance(author_data, dict) else str(author_data or "")
 
-        return records
+        records.append(
+            {
+                "quote" : item.get("text"),
+                "author" : author_name,
+                "tags" : ", ".join(item.get("tags", []))
+            }
+        )
+
+    return records
 
 
 
